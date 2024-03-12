@@ -43,9 +43,7 @@ router.post("/", fileUpload.diskLoader.single("Photo"), async (req, res) => {
       res.status(500).json({error : 'Error inserting user'});
       
     }else{
-      res.status(200).json({
-        file : "https://apivote-project.onrender.com" + fileUpload.filename
-    });
+      res.status(201).json({affected_row: result.affected_row});
     }
   });
   
