@@ -33,7 +33,8 @@ const fileUpload = new FileMiddleware();
 //อัพรูป
 router.post("/", fileUpload.diskLoader.single("Photo"), async (req, res) => {
   
-  const Photo = "https://apivote-project.onrender.com/uploads/"+fileUpload.filename;
+  // const Photo = "https://apivote-project.onrender.com/uploads/"+fileUpload.filename;
+  const Photo ="/uploads/"+fileUpload.filename;
   let UserID : ModelPhoto =req.body;
   const currenData = new Date().toISOString();
   const sql = "INSERT INTO `Image` (User_Id,Name_photo,Photo,Date_upload) VALUES (?,?,?,NOW())";
@@ -51,7 +52,8 @@ router.post("/", fileUpload.diskLoader.single("Photo"), async (req, res) => {
 
 //แก้ไขรูปที่อัพ
 router.put("/",fileUpload.diskLoader.single("Avatar"),(req,res)=>{
-  const Photo ="https://apivote-project.onrender.com/uploads/"+fileUpload.filename;
+  // const Photo ="https://apivote-project.onrender.com/uploads/"+fileUpload.filename;
+  const Photo ="/uploads/"+fileUpload.filename;
   let UserID : ModelPhoto = req.body;
   const currenData = new Date().toISOString();
   const sql = "INSERT INTO `Image` (User_Id,Name_photo,Photo,Date_upload) VALUES (?,?,?,NOW())";
