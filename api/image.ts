@@ -45,12 +45,15 @@ router.get('/:User_Id', (req, res) => {
     });
 });
 
-// router.get("/read/:Id",async(req,res)=>{
-//     const User_Id = req.query.User_Id;
-//     // const Password = req.query.Password;
-//     const sql = "select * from User WHERE User_Id =? ";
-//     conn.query(sql,[User_Id],(err,result)=>{
-//         res.json(result);
-//     });
-// }); 
+
+//ลบรูป
+router.delete("/:ImageID", (req, res) => {
+    let id = +req.params.ImageID;
+    conn.query("delete from Image where ImageID = ?", [id], (err, result) => {
+       if (err) throw err;
+       res
+         .status(200)
+         .json({ affected_row: result.affectedRows });
+    });
+  });
 

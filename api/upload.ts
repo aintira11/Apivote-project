@@ -50,7 +50,7 @@ router.post("/", fileUpload.diskLoader.single("Photo"), async (req, res) => {
   
 });
 
-//แก้ไขรูปที่อัพ
+//แก้ไขรูป Avatar
 router.put("/",fileUpload.diskLoader.single("Avatar"),(req,res)=>{
   // const Photo ="https://apivote-project.onrender.com/uploads/"+fileUpload.filename;
   const Photo ="/uploads/"+fileUpload.filename;
