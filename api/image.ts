@@ -24,71 +24,67 @@ router.get('/random/image',(req,res)=>{
     });
 });
 
-
+   // const sql = `SELECT * FROM Vote 
+        //                 JOIN Image ON Vote.ImageID = Image.ImageID 
+        //                 JOIN User ON Image.User_Id = User.User_Id 
+        //                 WHERE Date_vote = '2024-03-14' 
+        //                 ORDER BY V_Score DESC 
+        //                 LIMIT 10`;
+        // conn.query(sql, (err, result) => {
+        //     if (err) {
+        //         console.error(err);
+        //         return res.status(500).json({ error: 'Error fetching photos' });
+        //     }
+        //     res.json(result);
+        //     console.log(JSON.stringify(result));
+        // });
 //Get All image เรียงำลดับ มากไปน้อย
 router.get('/get/allPhoto', (req, res) => {
-//     const sql = `SELECT * FROM Vote 
-//                     JOIN Image ON Vote.ImageID = Image.ImageID 
-//                     JOIN User ON Image.User_Id = User.User_Id 
-//                     WHERE Date_vote = ? 
-//                     ORDER BY V_Score DESC 
-//                     LIMIT 10`;
-//     conn.query(sql, (err, result) => {
-//         if (err) {
-//             console.error(err);
-//             return res.status(500).json({ error: 'Error fetching photos' });
-//         }
-//         res.json(result);
-//         console.log(JSON.stringify(result));
-//     });
-// });
+    const currentDate = new Date();
+    const day = currentDate.getDate();
+    const month = currentDate.getMonth() + 1; // เพิ่ม 1 เนื่องจาก getMonth เริ่มต้นที่ 0 สำหรับเดือนมกราคม
+    const year = currentDate.getFullYear();
+    const formattedDate = `${year}-${month}-${day}`;
+    console.log(formattedDate);
 
-// 1. ดึงข้อมูลโหวตจากวันก่อนหน้านี้
-const yesterday = new Date();
-yesterday.setDate(yesterday.getDate() - 1); // ลดวันลง 1 วัน
-const formattedYesterday = yesterday.toISOString().split('T')[0];
-
-// 2. ดึงข้อมูลโหวตจากวันปัจจุบัน
-const today = new Date();
-const formattedToday = today.toISOString().split('T')[0];
-
-// 3. เปรียบเทียบคะแนนโหวตระหว่างวันก่อนหน้ากับวันปัจจุบัน
-const sql = `
-    SELECT ImageID, V_Score AS yesterday_score
-    FROM Vote
-    WHERE Date_vote = ?
-    ORDER BY V_Score DESC
-    LIMIT 10
-`;
-conn.query(sql, [formattedYesterday], (err, yesterdayResults) => {
-    if (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Error fetching yesterday votes' });
-    }
-
-    conn.query(sql, [formattedToday], (err, todayResults) => {
+    const sql = "SELECT * FROM Vote WHERE Date_vote = ? ORDER BY V_Score DESC LIMIT 10";
+    conn.query(sql, [formattedDate], (err, result) => {
         if (err) {
             console.error(err);
-            return res.status(500).json({ error: 'Error fetching today votes' });
+            return res.status(500).json({ error: 'Error fetching votes' });
         }
 
-        // เปรียบเทียบคะแนนโหวตและหาความแตกต่างของลำดับ
-        const rankings: { ImageID: any; diff: number; }[] = [];
-        todayResults.forEach((todayItem: { ImageID: any; }, index: number) => {
-            const yesterdayItem = yesterdayResults.find((item: { ImageID: any; }) => item.ImageID === todayItem.ImageID);
-            if (yesterdayItem) {
-                const diff = index - yesterdayResults.indexOf(yesterdayItem);
-                rankings.push({ ImageID: todayItem.ImageID, diff });
-            } else {
-                // หากไม่พบรายการในวันก่อนหน้า ให้ตั้งค่า diff เป็น -1
-                rankings.push({ ImageID: todayItem.ImageID, diff: -1 });
-            }
+        const imageIDs = result.map((row: { ImageID: any; }) => row.ImageID);
+        const imagePromises = imageIDs.map((ImageID: any) => {
+            return new Promise((resolve, reject) => {
+                const sqlImage = "SELECT * FROM Image WHERE ImageID = ?";
+                conn.query(sqlImage, [ImageID], (imageErr, imageResult) => {
+                    if (imageErr) {
+                        reject(imageErr);
+                        return;
+                    }
+                    resolve(imageResult[0]);
+                });
+            });
         });
 
-        res.json(rankings);
+        Promise.all(imagePromises)
+            .then((imageResults) => {
+                const finalResults = result.map((row: any, index:  number) => ({
+                    ...row,
+                    image: imageResults[index]
+                }));
+                res.json(finalResults);
+            })
+            .catch((error) => {
+                console.error('Error fetching images:', error);
+                res.status(500).json({ error: 'Error fetching images' });
+            });
     });
 });
-});
+
+
+
 
 
 //get รูปของแต่ละคน
