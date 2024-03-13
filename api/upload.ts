@@ -10,12 +10,9 @@ export const router = express.Router();
 //เชื่อม firebase
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+// import { getAnalytics } from "firebase/analytics";
+import { getStorage, ref,uploadBytesResumable,getDownloadURL} from "firebase/storage";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyDEg4DwZhyqF-xPHxQx2w0DdR6l0UdbtNs",
   authDomain: "vote-projectadv.firebaseapp.com",
@@ -28,7 +25,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 initializeApp(firebaseConfig);
-const storage = getAnalytics();
+const storage = getStorage();
 
 
 class FileMiddleware {
@@ -43,23 +40,32 @@ class FileMiddleware {
 }
 
 const fileUpload = new FileMiddleware(); 
-//อัพรูป
 router.post("/", fileUpload.diskLoader.single("Photo"), async (req, res) => {
-  
-  const Photo ="https://apivote-project.onrender.com/uploads/"+fileUpload.filename;
-  let UserID : ModelPhoto =req.body;
-  const currenData = new Date().toISOString();
-  const sql = "INSERT INTO `Image` (User_Id,Name_photo,Photo,Date_upload) VALUES (?,?,?,NOW())";
-  conn.query(sql,[UserID.User_Id,UserID.Name_photo,Photo],(err,result)=>{
-    if(err){
-      console.error(err);
-      res.status(500).json({error : 'Error inserting user'});
-      
-    }else{
-      res.status(201).json({Photo: Photo , result});
-    }
-  });
-  
+  try {
+    // อัพโหลดรูปภาพไปยัง Firebase Storage
+    const filename = Date.now() + "-" + Math.round(Math.random() * 1000) + ".png";
+    const storageRef = ref(storage, "/images/" + filename);
+    const metadata = { contentType: req.file!.mimetype };
+    const snapshot = await uploadBytesResumable(storageRef, req.file!.buffer, metadata);
+    const url = await getDownloadURL(snapshot.ref);
+
+    // บันทึกรูปภาพลงใน Firebase Storage และรับ URL ของรูปภาพ
+    const Photo = url;
+
+    // บันทึกข้อมูลลงในฐานข้อมูล MySQL
+    const UserID: ModelPhoto = req.body;
+    const sql = "INSERT INTO `Image` (User_Id, Name_photo, Photo, Date_upload) VALUES (?, ?, ?, NOW())";
+    conn.query(sql, [UserID.User_Id, UserID.Name_photo, Photo], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Error inserting user' });
+      }
+      res.status(201).json({ Photo: Photo, result });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error uploading image and inserting user' });
+  }
 });
 
 //แก้ไขรูป Avatar
