@@ -30,6 +30,7 @@ app.use("/random",image);
 app.use("/RankPhoto",image);
 app.use("/myPhoto",image);
 app.use("/Delete",image);
+app.use("/DataPhoto",image);
 
 app.use("/putUser_id",user);
 app.use("/",Elo);

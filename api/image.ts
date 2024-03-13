@@ -110,3 +110,14 @@ router.delete("/:ImageID", (req, res) => {
     });
   });
 
+
+  //get ข้อมูลของรูปนั้นๆ
+router.get('/data/:ImageID', (req, res) => {
+    const ImageID = req.query.ImageID;
+    const sql = "SELECT * FROM Image WHERE ImageID = ?";
+    
+    conn.query(sql, [ImageID], (err, result) => {
+        res.json(result);
+        console.log(JSON.stringify(result));
+    });
+});
