@@ -3,7 +3,7 @@ import path from "path";
 import multer from "multer";
 import { conn } from "../dbconnect";
 import { ModelPhoto } from "../model/model";
-import mysql from "mysql";
+// import mysql from "mysql";
 
 export const router = express.Router();
 
