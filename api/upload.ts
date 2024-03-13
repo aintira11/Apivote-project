@@ -5,8 +5,9 @@ import { conn } from "../dbconnect";
 import { ModelPhoto } from "../model/model";
 // import mysql from "mysql";
 
-
 export const router = express.Router();
+
+//เชื่อม firebase
 
 class FileMiddleware {
   filename = "";
@@ -25,37 +26,29 @@ class FileMiddleware {
     limits: {
       fileSize: 67108864, // 64 MByte
     },
-  }).single("Photo"); // ระบุชื่อ field ที่เป็นไฟล์ที่จะอัพโหลด
+  });
 }
 
 const fileUpload = new FileMiddleware(); 
-
-router.post("/", (req, res) => {
-  // เรียกใช้ middleware สำหรับอัพโหลดไฟล์
-  fileUpload.diskLoader(req, res, (err) => {
-    if (err) {
+//อัพรูป
+router.post("/", fileUpload.diskLoader.single("Photo"), async (req, res) => {
+  
+  // const Photo = "https://apivote-project.onrender.com/uploads/"+fileUpload.filename;
+  const Photo ="/uploads/"+fileUpload.filename;
+  let UserID : ModelPhoto =req.body;
+  const currenData = new Date().toISOString();
+  const sql = "INSERT INTO `Image` (User_Id,Name_photo,Photo,Date_upload) VALUES (?,?,?,NOW())";
+  conn.query(sql,[UserID.User_Id,UserID.Name_photo,Photo],(err,result)=>{
+    if(err){
       console.error(err);
-      return res.status(500).json({ error: 'Error uploading file' });
+      res.status(500).json({error : 'Error inserting user'});
+      
+    }else{
+      res.status(201).json({Photo: Photo , result});
     }
-
-    // สร้าง URL สำหรับไฟล์ที่อัพโหลด
-    const Photo = "/uploads/" + fileUpload.filename;
-
-    // ดึงข้อมูล UserID จาก request body
-    let UserID: ModelPhoto = req.body;
-
-    // เพิ่มข้อมูลลงในฐานข้อมูล
-    const sql = "INSERT INTO `Image` (User_Id, Name_photo, Photo, Date_upload) VALUES (?, ?, ?, NOW())";
-    conn.query(sql, [UserID.User_Id, UserID.Name_photo, Photo], (err, result) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: 'Error inserting user' });
-      }
-      res.status(201).json({ affected_row: result.affected_row });
-    });
   });
+  
 });
-
 
 //แก้ไขรูป Avatar
 // router.put("/",fileUpload.diskLoader.single("Avatar"),(req,res)=>{

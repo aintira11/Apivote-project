@@ -26,13 +26,70 @@ router.get('/random/image',(req,res)=>{
 
 
 //Get All image เรียงำลดับ มากไปน้อย
-router.get('/get/allPhoto',(req,res)=>{
-    const sql ="SELECT Name_photo,Photo,Score,User.User_Id,UserName FROM Image,User WHERE Image.User_Id = User.User_Id ORDER BY Score DESC";
-    conn.query(sql,(err,result)=>{
-                res.json(result);
-                console.log(JSON.stringify(result));
-            });
+router.get('/get/allPhoto', (req, res) => {
+//     const sql = `SELECT * FROM Vote 
+//                     JOIN Image ON Vote.ImageID = Image.ImageID 
+//                     JOIN User ON Image.User_Id = User.User_Id 
+//                     WHERE Date_vote = ? 
+//                     ORDER BY V_Score DESC 
+//                     LIMIT 10`;
+//     conn.query(sql, (err, result) => {
+//         if (err) {
+//             console.error(err);
+//             return res.status(500).json({ error: 'Error fetching photos' });
+//         }
+//         res.json(result);
+//         console.log(JSON.stringify(result));
+//     });
+// });
+
+// 1. ดึงข้อมูลโหวตจากวันก่อนหน้านี้
+const yesterday = new Date();
+yesterday.setDate(yesterday.getDate() - 1); // ลดวันลง 1 วัน
+const formattedYesterday = yesterday.toISOString().split('T')[0];
+
+// 2. ดึงข้อมูลโหวตจากวันปัจจุบัน
+const today = new Date();
+const formattedToday = today.toISOString().split('T')[0];
+
+// 3. เปรียบเทียบคะแนนโหวตระหว่างวันก่อนหน้ากับวันปัจจุบัน
+const sql = `
+    SELECT ImageID, V_Score AS yesterday_score
+    FROM Vote
+    WHERE Date_vote = ?
+    ORDER BY V_Score DESC
+    LIMIT 10
+`;
+conn.query(sql, [formattedYesterday], (err, yesterdayResults) => {
+    if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Error fetching yesterday votes' });
+    }
+
+    conn.query(sql, [formattedToday], (err, todayResults) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Error fetching today votes' });
+        }
+
+        // เปรียบเทียบคะแนนโหวตและหาความแตกต่างของลำดับ
+        const rankings: { ImageID: any; diff: number; }[] = [];
+        todayResults.forEach((todayItem: { ImageID: any; }, index: number) => {
+            const yesterdayItem = yesterdayResults.find((item: { ImageID: any; }) => item.ImageID === todayItem.ImageID);
+            if (yesterdayItem) {
+                const diff = index - yesterdayResults.indexOf(yesterdayItem);
+                rankings.push({ ImageID: todayItem.ImageID, diff });
+            } else {
+                // หากไม่พบรายการในวันก่อนหน้า ให้ตั้งค่า diff เป็น -1
+                rankings.push({ ImageID: todayItem.ImageID, diff: -1 });
+            }
+        });
+
+        res.json(rankings);
+    });
 });
+});
+
 
 //get รูปของแต่ละคน
 router.get('/:User_Id', (req, res) => {
