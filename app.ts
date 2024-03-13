@@ -37,4 +37,4 @@ app.use("/",Elo);
 app.use("/upload", upload);
 app.use("/uploads", express.static("uploads"));
 
-app.use("/update",updateimage);
+app.use("/edit",updateimage);
