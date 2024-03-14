@@ -57,7 +57,7 @@ router.get('/get/allPhoto', (req, res) => {
         const imageIDs = result.map((row: { ImageID: any; }) => row.ImageID);
         const imagePromises = imageIDs.map((ImageID: any) => {
             return new Promise((resolve, reject) => {
-                const sqlImage = "SELECT * FROM Image WHERE ImageID = ?";
+                const sqlImage = "SELECT * FROM Image ,User WHERE Image.User_Id = User.User_Id AND ImageID = ?";
                 conn.query(sqlImage, [ImageID], (imageErr, imageResult) => {
                     if (imageErr) {
                         reject(imageErr);
