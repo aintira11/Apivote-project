@@ -51,7 +51,7 @@ router.post("/elo/vote",(req,res)=>{
 
         const DateOriginal = new Date();
         const day = DateOriginal.getDate();
-        const month = DateOriginal.getMonth();
+        const month = DateOriginal.getMonth() +1;
         const year = DateOriginal.getFullYear();
         const matDateDATA = `${year}-${month}-${day}`;
         console.log(matDateDATA);
