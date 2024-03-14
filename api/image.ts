@@ -135,7 +135,7 @@ router.get("/score/:User_Id", async (req, res) => {
                      FROM Vote 
                      INNER JOIN Image ON Vote.ImageID = Image.ImageID 
                      INNER JOIN User ON Image.User_Id = User.User_Id
-                     WHERE Date_upload >= ? AND User.User_Id = ? 
+                     WHERE Vote.Date_vote >= ? AND User.User_Id = ? 
                      ORDER BY Vote.ImageID, Vote.Date_vote`;
         conn.query(query, [lastSevenDays, User_Id], (err, results) => {
             if (err) {
