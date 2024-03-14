@@ -38,7 +38,8 @@ router.get('/random/image',(req,res)=>{
         //     res.json(result);
         //     console.log(JSON.stringify(result));
         // });
-//Get All image เรียงำลดับ มากไปน้อย
+
+//Get All image เรียงำลดับ มากไปน้อย ของวัน ปจุบัน
 router.get('/get/allPhoto', (req, res) => {
     const currentDate = new Date();
     const day = currentDate.getDate();
@@ -82,8 +83,6 @@ router.get('/get/allPhoto', (req, res) => {
             });
     });
 });
-
-
 
 
 
