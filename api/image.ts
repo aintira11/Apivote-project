@@ -157,6 +157,7 @@ router.get("/score/:User_Id", async (req, res) => {
                         Date_upload: row.Date_upload,
                         Score: row.Score,
                         UserName: row.UserName,
+                        Photo: row.Photo,
                         Votes: [] // สร้างอาร์เรย์เพื่อเก็บข้อมูลของวันที่โหวตและคะแนน
                     };
                     // เพิ่มข้อมูลรูปภาพใหม่เข้าไปในอาร์เรย์
