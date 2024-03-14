@@ -120,3 +120,33 @@ router.get('/data/:ImageID', (req, res) => {
         console.log(JSON.stringify(result));
     });
 });
+
+//statistics Image
+router.get("/score/:User_Id", async (req, res) => {
+    try {
+        const User_Id = req.params.User_Id;
+        // หาวันที่ 7 วันที่ผ่านมา
+        const lastSevenDays = new Date();
+        lastSevenDays.setDate(lastSevenDays.getDate() - 7);
+        
+        // ดึงข้อมูล Score ของรูปภาพที่ผู้ใช้มีส่วนร่วมในช่วง 7 วันที่ผ่านมา
+        const query = `
+                     SELECT Vote.*, Image.*, User.* 
+                     FROM Vote 
+                     INNER JOIN Image ON Vote.ImageID = Image.ImageID 
+                     INNER JOIN User ON Image.User_Id = User.User_Id
+                     WHERE Date_upload >= ? AND User.User_Id = ? 
+                     ORDER BY Vote.ImageID, Vote.Date_vote`;
+        conn.query(query, [lastSevenDays, User_Id], (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: 'Error fetching votes' });
+            }
+            res.json(results);
+        });
+    } catch (error) {
+        console.error("Error fetching image statistics:", error);
+        res.status(500).json({ error: "Failed to fetch image statistics" });
+    }
+});
+
