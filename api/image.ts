@@ -133,7 +133,7 @@ router.get("/score/:User_Id", async (req, res) => {
         
         // ดึงข้อมูล Score ของรูปภาพที่ผู้ใช้มีส่วนร่วมในช่วง 7 วันที่ผ่านมา
         const query: string = `
-                     SELECT Image.ImageID, Image.Date_upload, Image.Score, User.UserName, Vote.Date_vote, Vote.V_Score
+                     SELECT Image.ImageID, Image.Date_upload, Image.Score,Image.Photo, User.UserName, Vote.Date_vote, Vote.V_Score
                      FROM Vote 
                      INNER JOIN Image ON Vote.ImageID = Image.ImageID 
                      INNER JOIN User ON Image.User_Id = User.User_Id
