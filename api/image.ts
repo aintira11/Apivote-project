@@ -133,7 +133,7 @@ router.get("/score/:User_Id", async (req, res) => {
         
         // ดึงข้อมูล Score ของรูปภาพที่ผู้ใช้มีส่วนร่วมในช่วง 7 วันที่ผ่านมา
         const query: string = `
-                     SELECT Image.ImageID, Image.Date_upload, Image.Score,Image.Photo, User.UserName, Vote.Date_vote, Vote.V_Score
+                     SELECT Image.ImageID, Image.Date_upload, Image.Score,Image.Photo,Image.Name_photo, User.UserName,User.User_Id, Vote.Date_vote, Vote.V_Score
                      FROM Vote 
                      INNER JOIN Image ON Vote.ImageID = Image.ImageID 
                      INNER JOIN User ON Image.User_Id = User.User_Id
@@ -157,7 +157,9 @@ router.get("/score/:User_Id", async (req, res) => {
                         Date_upload: row.Date_upload,
                         Score: row.Score,
                         UserName: row.UserName,
+                        User_Id: row.User_Id,
                         Photo: row.Photo,
+                        Name_photo: row.Name_photo,
                         Votes: [] // สร้างอาร์เรย์เพื่อเก็บข้อมูลของวันที่โหวตและคะแนน
                     };
                     // เพิ่มข้อมูลรูปภาพใหม่เข้าไปในอาร์เรย์
