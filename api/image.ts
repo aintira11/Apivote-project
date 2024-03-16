@@ -177,30 +177,50 @@ router.get("/score/:User_Id", async (req, res) => {
     }
 });
 
-// router.get("/score/:User_Id", async (req, res) => {
-//     try {
-//         const User_Id = req.params.User_Id;
-//         // หาวันที่ 7 วันที่ผ่านมา
-//         const lastSevenDays = new Date();
-//         lastSevenDays.setDate(lastSevenDays.getDate() - 7);
-        
-//         // ดึงข้อมูล Score ของรูปภาพที่ผู้ใช้มีส่วนร่วมในช่วง 7 วันที่ผ่านมา
-//         const query = `
-//                      SELECT Vote.*, Image.*, User.* 
-//                      FROM Vote 
-//                      INNER JOIN Image ON Vote.ImageID = Image.ImageID 
-//                      INNER JOIN User ON Image.User_Id = User.User_Id
-//                      WHERE Vote.Date_vote >= ? AND User.User_Id = ? 
-//                      ORDER BY Vote.ImageID, Vote.Date_vote`;
-//         conn.query(query, [lastSevenDays, User_Id], (err, results) => {
-//             if (err) {
-//                 console.error(err);
-//                 return res.status(500).json({ error: 'Error fetching votes' });
-//             }
-//             res.json(results);
-//         });
-//     } catch (error) {
-//         console.error("Error fetching image statistics:", error);
-//         res.status(500).json({ error: "Failed to fetch image statistics" });
-//     }
-// });
+    // // สร้างวัตถุ Date สำหรับวันก่อนหน้าและวันปัจจุบัน
+    // const previousDate = new Date();
+    // const currentDate = new Date();
+    
+    // // ลดวันที่ของ previousDate ลง 1 วัน
+    // previousDate.setDate(previousDate.getDate() - 1);
+    
+    // // แปลงรูปแบบวันที่ให้เป็น ISO string โดยใช้ toISOString()
+    // const formattedPreviousDate = previousDate.toISOString().split('T')[0];
+    // const formattedCurrentDate = currentDate.toISOString().split('T')[0];
+    
+    // console.log('Previous Date:', formattedPreviousDate);
+    // console.log('Current Date:', formattedCurrentDate);
+    
+    router.get('/get/diff', (req, res) => {
+        // ดึงข้อมูลรูปภาพและคะแนนก่อนการโหวตของวันก่อนหน้า
+        const sqlBefore = `SELECT * FROM Vote WHERE Date_vote = CURDATE()-1 ORDER BY V_Score DESC LIMIT 10`;
+        conn.query({sql: sqlBefore, timeout: 60000}, (err, beforeResults) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: 'Error fetching photos for the previous day' });
+            }
+    
+            // ดึงข้อมูลรูปภาพและคะแนนหลังการโหวตของวันปัจจุบัน
+            const sqlAfter = `SELECT * FROM Vote WHERE Date_vote = CURDATE() ORDER BY V_Score DESC LIMIT 10`;
+            conn.query({sql: sqlAfter, timeout: 60000}, (err, afterResults) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ error: 'Error fetching photos for the current day' });
+                }
+    
+                // คำนวณหาความแตกต่างในอันดับระหว่างก่อนและหลังการโหวต
+                const rankingsDiff: { ImageID: any; V_Score: number; diff: number | null; rank: number }[] = [];
+                afterResults.forEach((afterItem: { ImageID: any; V_Score: number; }, index: number) => {
+                    const beforeIndex = beforeResults.findIndex((item: { ImageID: any; }) => item.ImageID === afterItem.ImageID);
+                    const rank = index + 1;
+                    const diff = beforeIndex !== -1 ? beforeIndex - index : null;
+                    rankingsDiff.push({ ImageID: afterItem.ImageID, V_Score: afterItem.V_Score, diff, rank });
+                    console.log(beforeIndex);
+                    console.log(diff);
+                });
+                console.log(rankingsDiff);
+                res.json(rankingsDiff);
+            });
+        });
+    });
+    
