@@ -129,7 +129,7 @@ router.get("/score/:User_Id", async (req, res) => {
         const User_Id: string = req.params.User_Id;
         // หาวันที่ 7 วันที่ผ่านมา
         const lastSevenDays: Date = new Date();
-        lastSevenDays.setDate(lastSevenDays.getDate() - 7);
+        lastSevenDays.setDate(lastSevenDays.getDate() - 6);
         
         // ดึงข้อมูล Score ของรูปภาพที่ผู้ใช้มีส่วนร่วมในช่วง 7 วันที่ผ่านมา
         const query: string = `
