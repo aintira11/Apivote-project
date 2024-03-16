@@ -222,5 +222,40 @@ router.get("/score/:User_Id", async (req, res) => {
             });
         });
     });
+
+
+
+    // diff ของ รูป ของแต่ละคน
+    router.get('/get/diff/:User_Id', (req, res) => {
+        const User_Id = req.params.User_Id;
+        // ดึงข้อมูลรูปภาพและคะแนนก่อนการโหวตของวันก่อนหน้า
+        const sqlBefore = `SELECT * FROM Vote , Image,User WHERE Vote.ImageID = Image.ImageID AND Image.User_Id = User.User_Id AND Date_vote = CURDATE() - INTERVAL 1 DAY AND User.User_Id = ? ORDER BY V_Score DESC `;
+        conn.query({sql: sqlBefore, timeout: 60000}, [User_Id], (err, beforeResults) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: 'Error fetching photos for the previous day' });
+            }
     
+            // ดึงข้อมูลรูปภาพและคะแนนหลังการโหวตของวันปัจจุบัน
+            const sqlAfter = `SELECT * FROM Vote , Image,User WHERE Vote.ImageID = Image.ImageID AND Image.User_Id = User.User_Id AND Date_vote = CURDATE() AND User.User_Id = ? ORDER BY V_Score DESC LIMIT 10`;
+            conn.query({sql: sqlAfter, timeout: 60000}, [User_Id], (err, afterResults) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ error: 'Error fetching photos for the current day' });
+                }
+    
+                // คำนวณหาความแตกต่างในอันดับระหว่างวันก่อนหน้าและวันปัจจุบัน
+                const rankingsDiff: { ImageID: any; V_Score: number; diff: number | null; rank_previous: number; rank_current: number }[] = [];
+                afterResults.forEach((afterItem: { ImageID: any; V_Score: number; }, index: number) => {
+                    const beforeIndex = beforeResults.findIndex((item: { ImageID: any; }) => item.ImageID === afterItem.ImageID);
+                    const rank_previous = beforeIndex !== -1 ? beforeIndex + 1 : null;
+                    const rank_current = index + 1;
+                    const diff = rank_previous !== null ? rank_previous - rank_current : null;
+                    rankingsDiff.push({ ImageID: afterItem.ImageID, V_Score: afterItem.V_Score, diff, rank_previous, rank_current });
+                });
+                console.log(rankingsDiff);
+                res.json(rankingsDiff);
+            });
+        });
+    });
     
