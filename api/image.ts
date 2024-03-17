@@ -129,7 +129,7 @@ router.get("/score/:User_Id", async (req, res) => {
         const User_Id: string = req.params.User_Id;
         // หาวันที่ 7 วันที่ผ่านมา
         const lastSevenDays: Date = new Date();
-        lastSevenDays.setDate(lastSevenDays.getDate() - 6);
+        lastSevenDays.setDate(lastSevenDays.getDate() - 7);
         
         // ดึงข้อมูล Score ของรูปภาพที่ผู้ใช้มีส่วนร่วมในช่วง 7 วันที่ผ่านมา
         const query: string = `
@@ -225,7 +225,7 @@ router.get("/score/:User_Id", async (req, res) => {
 
 
 
-    // diff ของ รูป ของแต่ละคน
+    // อันดับ ของ รูป ของแต่ละคน ที่หน้า static
     router.get('/get/diff/:User_Id', (req, res) => {
         const User_Id = req.params.User_Id;
         // ดึงข้อมูลรูปภาพและคะแนนก่อนการโหวตของวันก่อนหน้า
