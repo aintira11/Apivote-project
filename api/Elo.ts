@@ -204,16 +204,7 @@ router.post("/elo/vote", (req, res) => {
             console.log("Rpb : " + Rpb);
 
              // Return JSON response with required data
-            return res.json({
-                ImageID1: ImageID1,
-                ImageID2: ImageID2,
-                Score1: Score1,
-                Score2: Score2,
-                Ea:Ea.toFixed(13),
-                Eb: Eb.toFixed(13),
-                Rpa: Rpa.toFixed(13),
-                Rpb: Rpb.toFixed(13)
-            });
+       
             // เช็คว่า รูปนี้เคยมีการโหวตในวันนั้นๆ แล้วหรือยัง
             // ถ้าเคยถูกโหวตไปแล้วจะไม่ทำการเพิ่มฟิวใน table Vote
             // แต่จะเป็นการอัพเดตจะแนนใน table Image เลย
@@ -295,6 +286,17 @@ router.post("/elo/vote", (req, res) => {
                         }
                     });
                 }
+            });
+            
+            return res.json({
+                ImageID1: ImageID1,
+                ImageID2: ImageID2,
+                Score1: Score1,
+                Score2: Score2,
+                Ea:Ea.toFixed(13),
+                Eb: Eb.toFixed(13),
+                Rpa: Rpa.toFixed(13),
+                Rpb: Rpb.toFixed(13)
             });
         });
         
