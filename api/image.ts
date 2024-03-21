@@ -121,6 +121,17 @@ router.get('/data/:ImageID', (req, res) => {
     });
 });
 
+  //get Score ของรูปนั้นๆ
+  router.get('/Score/:ImageID', (req, res) => {
+    const ImageID = req.params.ImageID;
+    const sql = "SELECT Score FROM Image WHERE ImageID = ?";
+    
+    conn.query(sql, [ImageID], (err, result) => {
+        res.json(result);
+        console.log(JSON.stringify(result));
+    });
+});
+
 
 
 //statistics Image
@@ -212,6 +223,7 @@ router.get("/score/:User_Id", async (req, res) => {
                 const rankingsDiff: { ImageID: any; V_Score: number; diff: number | null; rank_previous: number; rank_current: number }[] = [];
                 afterResults.forEach((afterItem: { ImageID: any; V_Score: number; }, index: number) => {
                     const beforeIndex = beforeResults.findIndex((item: { ImageID: any; }) => item.ImageID === afterItem.ImageID);
+                     //findIndex เพื่อค้นหาว่ารูปภาพเดียวกันใน afterItem มีอันดับเท่าไรในข้อมูลเมื่อวาน (ที่เก็บใน beforeResults)
                     const rank_previous = beforeIndex !== -1 ? beforeIndex + 1 : null;
                     const rank_current = index + 1;
                     const diff = rank_previous !== null ? rank_previous - rank_current : null;
