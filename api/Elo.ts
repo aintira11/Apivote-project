@@ -287,9 +287,11 @@ router.post("/elo/vote", (req, res) => {
                     });
                 }
             });
-            
+
             return res.json({
                 ImageID1: ImageID1,
+                OleScore1: Ra,
+                OleScore2: Rb,
                 ImageID2: ImageID2,
                 Score1: Score1,
                 Score2: Score2,
