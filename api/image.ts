@@ -122,33 +122,35 @@ router.get('/data/:ImageID', (req, res) => {
 });
 
   //get Score ของรูปนั้นๆ
-  router.get('/Score/:ImageID', (req, res) => {
-    const ImageID = req.params.ImageID;
-    const sql = "SELECT Score FROM Image WHERE ImageID = ?";
+//   router.get('/Score/:ImageID', (req, res) => {
+//     const ImageID = req.params.ImageID;
+//     const sql = "SELECT Score FROM Image WHERE ImageID = ?";
     
-    conn.query(sql, [ImageID], (err, result) => {
-        res.json(result);
-        console.log(JSON.stringify(result));
-    });
-});
+//     conn.query(sql, [ImageID], (err, result) => {
+//         res.json(result);
+//         console.log(JSON.stringify(result));
+//     });
+// });
 
 
 
 //statistics Image
 router.get("/score/:User_Id", async (req, res) => {
     try {
-        const User_Id: string = req.params.User_Id;
+        const User_Id = req.params.User_Id;
         // หาวันที่ 7 วันที่ผ่านมา
-        const lastSevenDays: Date = new Date();
+        const lastSevenDays = new Date();
+        lastSevenDays.setHours(0, 0, 0, 0); // ตั้งค่าเวลาเป็น 00:00:00
         lastSevenDays.setDate(lastSevenDays.getDate() - 7);
-        
+
+        console.log("Last seven days:", lastSevenDays);
         // ดึงข้อมูล Score ของรูปภาพที่ผู้ใช้มีส่วนร่วมในช่วง 7 วันที่ผ่านมา
         const query: string = `
                      SELECT Image.ImageID, Image.Date_upload, Image.Score,Image.Photo,Image.Name_photo, User.UserName,User.User_Id, Vote.Date_vote, Vote.V_Score
                      FROM Vote 
                      INNER JOIN Image ON Vote.ImageID = Image.ImageID 
                      INNER JOIN User ON Image.User_Id = User.User_Id
-                     WHERE Vote.Date_vote >= ? AND User.User_Id = ? 
+                     WHERE Vote.Date_vote >= ? AND User.User_Id = ?
                      ORDER BY Image.ImageID, Vote.Date_vote`;
         conn.query(query, [lastSevenDays, User_Id], (err: any, results: any) => {
             if (err) {
@@ -182,7 +184,9 @@ router.get("/score/:User_Id", async (req, res) => {
             // ส่งข้อมูลอาร์เรย์ที่ได้กลับไป
             res.json(imageStatistics);
         });
+        
     } catch (error) {
+        
         console.error("Error fetching image statistics:", error);
         res.status(500).json({ error: "Failed to fetch image statistics" });
     }
