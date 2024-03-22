@@ -25,19 +25,31 @@ router.get("/read/:Id",async(req,res)=>{
 }); 
 
 
+const bcrypt = require('bcrypt');
 //member add
 router.post('/:add',(req,res)=>{
     let user : modelUser = req.body;
     let sql = "INSERT INTO `User`(`Email`,`Password`,`UserName`,`Name`,`Type`,`Avatar`) VALUES(?,?,?,?,'member','https://static.vecteezy.com/system/resources/thumbnails/019/879/186/small/user-icon-on-transparent-background-free-png.png')";
-    conn.query(sql,[user.Email,user.Password,user.UserName,user.Name],(err,result)=>{
-        if(err){
-            console.error('Error inserting user :',err);
-            res.status(500).json({error: 'Error inserting user'});
-        }else {
-            res.status(201).json({affected_row:result.affectedRows});
+
+    // ทำการ hash รหัสผ่าน
+    bcrypt.hash(user.Password, 10, function(err: any, hash: any) {
+        if(err) {
+            console.error('Error hashing password:', err);
+            res.status(500).json({error: 'Error hashing password'});
+        } else {
+            // เมื่อ hash สำเร็จ ให้นำ hash ไปเก็บลงในฐานข้อมูล
+            conn.query(sql,[user.Email, hash, user.UserName, user.Name],(err,result)=>{
+                if(err){
+                    console.error('Error inserting user :',err);
+                    res.status(500).json({error: 'Error inserting user'});
+                } else {
+                    res.status(201).json({affected_row:result.affectedRows});
+                }
+            });
         }
     });
 });
+
 
 
 // PUT endpoint สำหรับการอัปเดตข้อมูลผู้ใช้ *ยังอัพรูปไม่ได้
