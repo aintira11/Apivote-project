@@ -1,6 +1,7 @@
 import express from "express";
 import { conn, queryAsync } from "../dbconnect";
 import { modelUser } from "../model/model";
+import bcrypt from "bcrypt";
 
 export const router =express.Router();
 
@@ -25,7 +26,7 @@ router.get("/read/:Id",async(req,res)=>{
 }); 
 
 
-const bcrypt = require('bcrypt');
+
 //member add
 router.post('/:add',(req,res)=>{
     let user : modelUser = req.body;
@@ -49,7 +50,6 @@ router.post('/:add',(req,res)=>{
         }
     });
 });
-
 
 
 // PUT endpoint สำหรับการอัปเดตข้อมูลผู้ใช้ *ยังอัพรูปไม่ได้
