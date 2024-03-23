@@ -24,6 +24,7 @@ app.use(
 
 // app.use("/GetUser",user);
 app.use("/login",user);
+app.use("/getdata",user);
 app.use("/insert",user);
 app.use("/Allmembers",user);
 
