@@ -14,7 +14,7 @@ export interface modelUser {
     UserName: string;
     Name:     string;
     Email:    string;
-    Password: string;
+    Password: any;
     Avatar:   any;
     Type:     any;
 }

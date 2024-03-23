@@ -72,45 +72,6 @@ router.post('/:add',(req,res)=>{
 });
 
 
-// PUT endpoint สำหรับการอัปเดตข้อมูลผู้ใช้ *ยังอัพรูปไม่ได้
-router.put("/:User_id", async (req, res) =>  {
-    const id = +req.params.User_id;
-    const newUser = req.body;
-
-    // ดึงข้อมูลผู้ใช้เดิมจากฐานข้อมูล
-    const sqlSelect = 'SELECT * FROM User WHERE User_Id = ?';
-    conn.query(sqlSelect, [id], (err, results) => {
-        if (err) {
-            console.error('Error selecting user:', err);
-            res.status(500).json({ error: 'Error selecting user' });
-            return;
-        }
-
-        if (results.length === 0) {
-            res.status(404).json({ error: 'User not found' });
-            return;
-        }
-
-        const originalUser = results[0];
-
-        // รวมข้อมูลใหม่กับข้อมูลเดิม
-        const updatedUser = { ...originalUser, ...newUser };
-
-        // ทำการอัปเดตข้อมูลในฐานข้อมูล
-        const sqlUpdate = "UPDATE User SET UserName=?, Name=?, Avatar=? WHERE User_Id=?";
-        conn.query(sqlUpdate, [updatedUser.UserName, updatedUser.Name, updatedUser.Avatar, id], (err, result) => {
-            if (err) {
-                console.error('Error updating user:', err);
-                res.status(500).json({ error: 'Error updating user' });
-                return;
-            }
-            
-            res.status(200).json({ affected_rows: result.affectedRows });
-        });
-    });
-}); 
-
-
 //  get all สมาชิก
 router.get("/get/allMembers",async(req,res)=>{
     const sql = "SELECT * FROM User ";
