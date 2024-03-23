@@ -27,9 +27,9 @@ router.get("/:user",async(req,res)=>{
 //     });
 // });
 
-//*** */
-router.get("/read/:Id",async(req,res)=>{
-    const User_Id = req.query.User_Id;
+//get data user by id
+router.get("/read/:User_Id",async(req,res)=>{
+    const User_Id = req.params.User_Id;
     // const Password = req.query.Password;
     const sql = "select * from User WHERE User_Id =? ";
     conn.query(sql,[User_Id],(err,result)=>{
