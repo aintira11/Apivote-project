@@ -1,7 +1,7 @@
 import express from "express";
 import { conn, queryAsync } from "../dbconnect";
 import { modelUser } from "../model/model";
-import bcrypt from "bcrypt";
+// import bcrypt from "bcrypt";
 
 export const router =express.Router();
 
