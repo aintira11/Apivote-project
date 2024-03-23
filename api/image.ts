@@ -6,7 +6,7 @@ export const router =express.Router();
 
 
 router.get('/random/image',(req,res)=>{
-    conn.query('SELECT ImageID,Name_photo,Photo FROM Image ORDER BY RAND() LIMIT 1', (error,results,fields)=>{
+    conn.query('SELECT * FROM Image ORDER BY RAND() LIMIT 1', (error,results,fields)=>{
         if(error){
             return res.status(500).json({error : 'An error occurred while fetching the random image'});
 
