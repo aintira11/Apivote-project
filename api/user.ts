@@ -14,6 +14,18 @@ router.get("/:user",async(req,res)=>{
         res.json(result);
     });
 }); 
+// router.get("/:user", async (req, res) => {
+//     const Email = req.query.Email;
+//     const Password = req.query.Password;
+
+//     // เข้ารหัสรหัสผ่านที่ถูกส่งมาก่อนที่จะใช้ในคำสั่ง SQL
+//     const hashedPassword = await bcrypt.hash(Password, 10); // 10 เป็นค่า salt
+
+//     const sql = "SELECT * FROM User WHERE Email = ? AND Password = ?";
+//     conn.query(sql, [Email, hashedPassword], (err, result) => {
+//         res.json(result);
+//     });
+// });
 
 //*** */
 router.get("/read/:Id",async(req,res)=>{
@@ -30,25 +42,33 @@ router.get("/read/:Id",async(req,res)=>{
 //member add
 router.post('/:add',(req,res)=>{
     let user : modelUser = req.body;
-    let sql = "INSERT INTO `User`(`Email`,`Password`,`UserName`,`Name`,`Type`,`Avatar`) VALUES(?,?,?,?,'member','https://static.vecteezy.com/system/resources/thumbnails/019/879/186/small/user-icon-on-transparent-background-free-png.png')";
+    let sql = "INSERT INTO `User`(`Email`,`Password`,`UserName`,`Name`,`Type`,`Avatar`) VALUES(?,?,?,?,'member','https://www.hotelbooqi.com/wp-content/uploads/2021/12/128-1280406_view-user-icon-png-user-circle-icon-png.png')";
 
+    conn.query(sql,[user.Email, user.Password, user.UserName, user.Name],(err,result)=>{
+                    if(err){
+                        console.error('Error inserting user :',err);
+                        res.status(500).json({error: 'Error inserting user'});
+                    } else {
+                        res.status(201).json({affected_row:result.affectedRows});
+                    }
+                });
     // ทำการ hash รหัสผ่าน
-    bcrypt.hash(user.Password, 10, function(err: any, hash: any) {
-        if(err) {
-            console.error('Error hashing password:', err);
-            res.status(500).json({error: 'Error hashing password'});
-        } else {
-            // เมื่อ hash สำเร็จ ให้นำ hash ไปเก็บลงในฐานข้อมูล
-            conn.query(sql,[user.Email, hash, user.UserName, user.Name],(err,result)=>{
-                if(err){
-                    console.error('Error inserting user :',err);
-                    res.status(500).json({error: 'Error inserting user'});
-                } else {
-                    res.status(201).json({affected_row:result.affectedRows});
-                }
-            });
-        }
-    });
+    // bcrypt.hash(user.Password, 10, function(err: any, hash: any) {
+    //     if(err) {
+    //         console.error('Error hashing password:', err);
+    //         res.status(500).json({error: 'Error hashing password'});
+    //     } else {
+    //         // เมื่อ hash สำเร็จ ให้นำ hash ไปเก็บลงในฐานข้อมูล
+    //         conn.query(sql,[user.Email, hash, user.UserName, user.Name],(err,result)=>{
+    //             if(err){
+    //                 console.error('Error inserting user :',err);
+    //                 res.status(500).json({error: 'Error inserting user'});
+    //             } else {
+    //                 res.status(201).json({affected_row:result.affectedRows});
+    //             }
+    //         });
+    //     }
+    // });
 });
 
 
