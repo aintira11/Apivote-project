@@ -39,7 +39,7 @@ router.get('/rankdif', (req, res) => {
 
 
 router.get('/allPhoto/Rank', (req, res) => {
-    const sql = "SELECT * FROM Image ORDER BY Score DESC";
+    const sql = "SELECT * FROM Image ,User WHERE Image.User_Id = User.User_Id  ORDER BY Score DESC";
     conn.query(sql, (err, result) => {
         if (err) {
             console.error(err);
