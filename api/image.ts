@@ -216,7 +216,7 @@ router.get("/score/:User_Id", async (req, res) => {
             }
     
             // ดึงข้อมูลรูปภาพและคะแนนหลังการโหวตของวันปัจจุบัน
-            const sqlAfter = `SELECT * FROM Vote WHERE Date_vote = CURDATE() ORDER BY V_Score DESC LIMIT 10`;
+            const sqlAfter = `SELECT * FROM Vote WHERE Date_vote = CURDATE() ORDER BY V_Score DESC `;
             conn.query({sql: sqlAfter, timeout: 60000}, (err, afterResults) => {
                 if (err) {
                     console.error(err);
