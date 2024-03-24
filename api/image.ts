@@ -48,7 +48,7 @@ router.get('/get/allPhoto', (req, res) => {
     const formattedDate = `${year}-${month}-${day}`;
     console.log(formattedDate);
 
-    const sql = "SELECT * FROM Vote WHERE Date_vote = CURDATE() ORDER BY V_Score DESC LIMIT 10";
+    const sql = "SELECT * FROM Vote WHERE Date_vote = CURDATE() ORDER BY V_Score DESC ";
     conn.query(sql, [formattedDate], (err, result) => {
         if (err) {
             console.error(err);

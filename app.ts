@@ -6,6 +6,7 @@ import { router as upload } from "./api/upload";
 import { router as Elo } from "./api/Elo";
 import { router as updateimage } from "./api/updateimage";
 import { router as updatuser } from "./api/updatuser";
+import { router as rankImage11 } from "./api/rankImage11";
 import bodyParser from "body-parser";
 export const app = express(); //export เพื่อเอาไปใช้ที่อื่นได้
 import cors from "cors";
@@ -44,3 +45,6 @@ app.use("/uploads", express.static("uploads"));
 
 app.use("/edit",updateimage);
 app.use("/editUser",updatuser);
+
+app.use("/rank11",rankImage11);
+app.use("/rankall",rankImage11);
