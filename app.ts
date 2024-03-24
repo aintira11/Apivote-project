@@ -48,3 +48,4 @@ app.use("/editUser",updatuser);
 
 app.use("/rank11",rankImage11);
 app.use("/rankall",rankImage11);
+app.use("/rankink",rankImage11);
