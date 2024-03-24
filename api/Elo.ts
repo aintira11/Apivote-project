@@ -199,7 +199,7 @@ router.post("/elo/vote", (req, res) => {
 
             //เอาค่า Ea,Eb มาลบ ในที้นี้ Score (ที่ส่งมาจากการคลิก)ชนะ =1 , แพ้=0
             const Rpa: number = Ra + 32 * (Score1 - Ea);
-            const Rpb: number = Ra + 32 * (Score2 - Eb);
+            const Rpb: number = Rb + 32 * (Score2 - Eb);
             console.log("Rpa : " + Rpa);
             console.log("Rpb : " + Rpb);
 
