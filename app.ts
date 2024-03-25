@@ -45,6 +45,7 @@ app.use("/uploads", express.static("uploads"));
 
 app.use("/edit",updateimage);
 app.use("/editUser",updatuser);
+app.use("/RU",updatuser);
 
 app.use("/rankall",rankImage11);
 app.use("/rankink",rankImage11);

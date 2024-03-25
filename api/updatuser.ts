@@ -38,44 +38,6 @@ class FileMiddleware {
 
 
 
-// PUT endpoint สำหรับการอัปเดตข้อมูลผู้ใช้ *ยังอัพรูปไม่ได้
-// router.put("/:User_id", async (req, res) =>  {
-//     const id = +req.params.User_id;
-//     const newUser = req.body;
-
-//     // ดึงข้อมูลผู้ใช้เดิมจากฐานข้อมูล
-//     const sqlSelect = 'SELECT * FROM User WHERE User_Id = ?';
-//     conn.query(sqlSelect, [id], (err, results) => {
-//         if (err) {
-//             console.error('Error selecting user:', err);
-//             res.status(500).json({ error: 'Error selecting user' });
-//             return;
-//         }
-
-//         if (results.length === 0) {
-//             res.status(404).json({ error: 'User not found' });
-//             return;
-//         }
-
-//         const originalUser = results[0];
-
-//         // รวมข้อมูลใหม่กับข้อมูลเดิม
-//         const updatedUser = { ...originalUser, ...newUser };
-
-//         // ทำการอัปเดตข้อมูลในฐานข้อมูล
-//         const sqlUpdate = "UPDATE User SET UserName=?, Name=?, Avatar=? WHERE User_Id=?";
-//         conn.query(sqlUpdate, [updatedUser.UserName, updatedUser.Name, updatedUser.Avatar, id], (err, result) => {
-//             if (err) {
-//                 console.error('Error updating user:', err);
-//                 res.status(500).json({ error: 'Error updating user' });
-//                 return;
-//             }
-            
-//             res.status(200).json({ affected_rows: result.affectedRows });
-//         });
-//     });
-// }); 
-
 const fileUpload = new FileMiddleware(); 
 router.put("/:User_Id", fileUpload.diskLoader.single("Avatar"), async (req, res) => {
   try {
@@ -127,4 +89,41 @@ router.put("/:User_Id", fileUpload.diskLoader.single("Avatar"), async (req, res)
     console.error(error);
     res.status(500).json({ error: 'Error uploading image and inserting user' });
   }
+});
+
+
+
+// rank รูปของ user
+router.get('/rankUser/:User_Id', (req, res) => {
+  const User_Id = req.params.User_Id;
+
+  // จัดอันดับรูป
+  const sqlBefore = "SELECT * FROM Image ,User WHERE Image.User_Id = User.User_Id  ORDER BY Score DESC";
+  conn.query({sql: sqlBefore, timeout: 60000}, (err, beforeResults) => {
+      if (err) {
+          console.error(err);
+          return res.status(500).json({ error: 'Error fetching photos for the previous day' });
+      }
+
+      // หารูปของ User
+      const sqlAfter = "SELECT ImageID ,Name_photo, Photo, Score, User.User_Id, UserName FROM Image, User WHERE Image.User_Id = User.User_Id AND User.User_Id = ?";
+      conn.query({sql: sqlAfter, timeout: 60000}, [User_Id], (err, afterResults) => {
+          if (err) {
+              console.error(err);
+              return res.status(500).json({ error: 'Error fetching photos for the current day' });
+          }
+
+          // หาอันดับของรูปภาพ
+          const rankingsDiff: { ImageID: any; V_Score: number; diff: number | null; rank_previous: number; rank_current: number }[] = [];
+          afterResults.forEach((afterItem: { ImageID: any; V_Score: number; }, index: number) => {
+              const beforeIndex = beforeResults.findIndex((item: { ImageID: any; }) => item.ImageID === afterItem.ImageID);
+              const rank_previous = beforeIndex !== -1 ? beforeIndex + 1 : null;
+              const rank_current = index + 1;
+              const diff = rank_previous !== null ? rank_previous - rank_current : null;
+              rankingsDiff.push({ ImageID: afterItem.ImageID, V_Score: afterItem.V_Score, diff, rank_previous, rank_current });
+          });
+          console.log(rankingsDiff);
+          res.json(rankingsDiff);
+      });
+  });
 });

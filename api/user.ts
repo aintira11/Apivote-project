@@ -11,7 +11,7 @@ router.get("/:user",async(req,res)=>{
     const Password = req.query.Password;
     const sql = "select * from User WHERE Email =? AND Password=?";
     conn.query(sql,[Email,Password],(err,result)=>{
-        res.json(result);
+        // res.json(result);
     });
 }); 
 // router.get("/:user", async (req, res) => {
@@ -33,7 +33,7 @@ router.get("/read/:User_Id",async(req,res)=>{
     // const Password = req.query.Password;
     const sql = "select * from User WHERE User_Id =? ";
     conn.query(sql,[User_Id],(err,result)=>{
-        res.json(result);
+        // res.json(result);
     });
 }); 
 
