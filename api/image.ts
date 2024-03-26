@@ -134,7 +134,7 @@ router.get('/data/:ImageID', (req, res) => {
 
 
 
-//statistics Image
+//statistics Image person
 router.get("/score/:User_Id", async (req, res) => {
     try {
         const User_Id = req.params.User_Id;
@@ -153,6 +153,65 @@ router.get("/score/:User_Id", async (req, res) => {
                      WHERE Vote.Date_vote >= ? AND User.User_Id = ?
                      ORDER BY Image.ImageID, Vote.Date_vote`;
         conn.query(query, [lastSevenDays, User_Id], (err: any, results: any) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: 'Error fetching votes' });
+            }
+            // สร้างอาร์เรย์เพื่อเก็บผลลัพธ์ที่แยกตามรูปภาพ
+            const imageStatistics: any[] = [];
+            let currentImage: any = null;
+            // ลูปผลลัพธ์ที่ได้จากคำสั่ง SQL
+            for (const row of results) {
+                // ถ้ารูปภาพปัจจุบันไม่มีข้อมูลหรือมี ID รูปภาพใหม่
+                if (!currentImage || currentImage.ImageID !== row.ImageID) {
+                    // สร้างข้อมูลรูปภาพใหม่
+                    currentImage = {
+                        ImageID: row.ImageID,
+                        Date_upload: row.Date_upload,
+                        Score: row.Score,
+                        UserName: row.UserName,
+                        User_Id: row.User_Id,
+                        Photo: row.Photo,
+                        Name_photo: row.Name_photo,
+                        Votes: [] // สร้างอาร์เรย์เพื่อเก็บข้อมูลของวันที่โหวตและคะแนน
+                    };
+                    // เพิ่มข้อมูลรูปภาพใหม่เข้าไปในอาร์เรย์
+                    imageStatistics.push(currentImage);
+                }
+                // เพิ่มข้อมูลวันที่โหวตและคะแนนลงในอาร์เรย์ของรูปภาพปัจจุบัน
+                currentImage.Votes.push({ Date_vote: row.Date_vote, V_Score: row.V_Score });
+            }
+            // ส่งข้อมูลอาร์เรย์ที่ได้กลับไป
+            res.json(imageStatistics);
+        });
+        
+    } catch (error) {
+        
+        console.error("Error fetching image statistics:", error);
+        res.status(500).json({ error: "Failed to fetch image statistics" });
+    }
+});
+
+
+// statistics Image
+router.get("/stat/score/:ImageID", async (req, res) => {
+    try {
+        const ImageID = req.params.ImageID;
+        // หาวันที่ 7 วันที่ผ่านมา
+        const lastSevenDays = new Date();
+        lastSevenDays.setHours(0, 0, 0, 0); // ตั้งค่าเวลาเป็น 00:00:00
+        lastSevenDays.setDate(lastSevenDays.getDate() - 7);
+
+        console.log("Last seven days:", lastSevenDays);
+        // ดึงข้อมูล Score ของรูปภาพที่ผู้ใช้มีส่วนร่วมในช่วง 7 วันที่ผ่านมา
+        const query: string = `
+                     SELECT Image.ImageID, Image.Date_upload, Image.Score,Image.Photo,Image.Name_photo, User.UserName,User.User_Id, Vote.Date_vote, Vote.V_Score
+                     FROM Vote 
+                     INNER JOIN Image ON Vote.ImageID = Image.ImageID 
+                     INNER JOIN User ON Image.User_Id = User.User_Id
+                     WHERE Vote.Date_vote >= ? AND Image.ImageID = ?
+                     ORDER BY Image.ImageID, Vote.Date_vote`;
+        conn.query(query, [lastSevenDays, ImageID], (err: any, results: any) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ error: 'Error fetching votes' });
@@ -240,38 +299,4 @@ router.get("/score/:User_Id", async (req, res) => {
     });
 
 
-
-    // อันดับ ของ รูป ของแต่ละคน ที่หน้า static
-    router.get('/get/diff/:User_Id', (req, res) => {
-        const User_Id = req.params.User_Id;
-        // ดึงข้อมูลรูปภาพและคะแนนก่อนการโหวตของวันก่อนหน้า
-        const sqlBefore = `SELECT * FROM Vote , Image,User WHERE Vote.ImageID = Image.ImageID AND Image.User_Id = User.User_Id AND Date_vote = CURDATE() - INTERVAL 1 DAY AND User.User_Id = ? ORDER BY V_Score DESC `;
-        conn.query({sql: sqlBefore, timeout: 60000}, [User_Id], (err, beforeResults) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).json({ error: 'Error fetching photos for the previous day' });
-            }
-    
-            // ดึงข้อมูลรูปภาพและคะแนนหลังการโหวตของวันปัจจุบัน
-            const sqlAfter = `SELECT * FROM Vote , Image,User WHERE Vote.ImageID = Image.ImageID AND Image.User_Id = User.User_Id AND Date_vote = CURDATE() AND User.User_Id = ? ORDER BY V_Score DESC LIMIT 10`;
-            conn.query({sql: sqlAfter, timeout: 60000}, [User_Id], (err, afterResults) => {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).json({ error: 'Error fetching photos for the current day' });
-                }
-    
-                // คำนวณหาความแตกต่างในอันดับระหว่างวันก่อนหน้าและวันปัจจุบัน
-                const rankingsDiff: { ImageID: any; V_Score: number; diff: number | null; rank_previous: number; rank_current: number }[] = [];
-                afterResults.forEach((afterItem: { ImageID: any; V_Score: number; }, index: number) => {
-                    const beforeIndex = beforeResults.findIndex((item: { ImageID: any; }) => item.ImageID === afterItem.ImageID);
-                    const rank_previous = beforeIndex !== -1 ? beforeIndex + 1 : null;
-                    const rank_current = index + 1;
-                    const diff = rank_previous !== null ? rank_previous - rank_current : null;
-                    rankingsDiff.push({ ImageID: afterItem.ImageID, V_Score: afterItem.V_Score, diff, rank_previous, rank_current });
-                });
-                console.log(rankingsDiff);
-                res.json(rankingsDiff);
-            });
-        });
-    });
     

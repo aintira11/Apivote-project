@@ -55,7 +55,7 @@ router.put("/Image/:ImageID", fileUpload.diskLoader.single("Photo"), async (req,
     // บันทึกข้อมูลลงในฐานข้อมูล MySQL
     const data: ModelPhoto = req.body;
     const ImageID =req.params.ImageID;
-    const sql = "UPDATE Image SET Name_photo=?, Photo=?, Date_upload = NOW() WHERE ImageID = ?";
+    const sql = "UPDATE Image SET Name_photo=?, Photo=?,Score = 1000, Date_upload = NOW() WHERE ImageID = ?";
     conn.query(sql, [data.Name_photo, Photo,ImageID], (err, result) => {
       if (err) {
         console.error(err);

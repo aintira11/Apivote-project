@@ -35,6 +35,7 @@ app.use("/myPhoto",image);
 app.use("/Delete",image);
 app.use("/DataPhoto",image);
 app.use("/statistics",image);
+app.use("/statistics2",image);
 app.use("/rankDiff",image);
 
 app.use("/putUser_id",user);
