@@ -73,11 +73,28 @@ router.post('/:add',(req,res)=>{
 
 
 //  get all สมาชิก
-router.get("/get/allMembers",async(req,res)=>{
-    const sql = "SELECT * FROM User ";
-    // const sql = "SELECT * FROM User WHERE Type = 'member' ";
-    conn.query(sql,(err,result)=>{
-        res.json(result);
-        console.log(JSON.stringify(result));
+router.get("/get/allMembers", async (req, res) => {
+    const sql = `SELECT User.User_Id, User.UserName, User.Name, User.Email, User.Avatar,
+    Image.ImageID, Image.Name_photo, Image.Photo, Image.Score 
+    FROM User 
+    INNER JOIN Image ON User.User_Id = Image.User_Id`;
+    conn.query(sql, (err, results) => {
+    if (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Error fetching members and their images' });
+    }
+
+    const allMembersImages = results.reduce((acc: any[], { User_Id, UserName, Name, Email, Avatar, ImageID, Name_photo, Photo, Score }: any) => {
+    const existingMember = acc.find((member) => member.User_Id === User_Id);
+    if (existingMember) {
+    existingMember.images.push({ ImageID, Name_photo, Photo, Score });
+    } else {
+    acc.push({ User_Id, UserName, Name, Email, Avatar, images: [{ ImageID, Name_photo, Photo, Score }] });
+    }
+    return acc;
+    }, []);
+
+    res.json(allMembersImages);
+    console.log(JSON.stringify(allMembersImages));
     });
 });
