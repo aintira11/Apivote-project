@@ -75,26 +75,32 @@ router.post('/:add',(req,res)=>{
 //  get all สมาชิก
 router.get("/get/allMembers", async (req, res) => {
     const sql = `SELECT User.User_Id, User.UserName, User.Name, User.Email, User.Avatar,
-    Image.ImageID, Image.Name_photo, Image.Photo, Image.Score 
-    FROM User 
-    INNER JOIN Image ON User.User_Id = Image.User_Id`;
+                        Image.ImageID, Image.Name_photo, Image.Photo, Image.Score 
+                 FROM User 
+                 LEFT JOIN Image ON User.User_Id = Image.User_Id`;
     conn.query(sql, (err, results) => {
-    if (err) {
-    console.error(err);
-    return res.status(500).json({ error: 'Error fetching members and their images' });
-    }
-
-    const allMembersImages = results.reduce((acc: any[], { User_Id, UserName, Name, Email, Avatar, ImageID, Name_photo, Photo, Score }: any) => {
-    const existingMember = acc.find((member) => member.User_Id === User_Id);
-    if (existingMember) {
-    existingMember.images.push({ ImageID, Name_photo, Photo, Score });
-    } else {
-    acc.push({ User_Id, UserName, Name, Email, Avatar, images: [{ ImageID, Name_photo, Photo, Score }] });
-    }
-    return acc;
-    }, []);
-
-    res.json(allMembersImages);
-    console.log(JSON.stringify(allMembersImages));
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Error fetching members and their images' });
+        }
+        
+        const allMembersImages = results.reduce((acc: { User_Id: any; UserName: any; Name: any; Email: any; Avatar: any; images: { ImageID: any; Name_photo: any; Photo: any; Score: any; }[] }[], { User_Id, UserName, Name, Email, Avatar, ImageID, Name_photo, Photo, Score }: any) => {
+            const existingMember = acc.find((member) => member.User_Id === User_Id);
+            if (existingMember) {
+                if (ImageID) {
+                    existingMember.images.push({ ImageID, Name_photo, Photo, Score });
+                }
+            } else {
+                const memberData = { User_Id, UserName, Name, Email, Avatar, images: [] as { ImageID: any; Name_photo: any; Photo: any; Score: any; }[] };
+                if (ImageID) {
+                    memberData.images.push({ ImageID, Name_photo, Photo, Score });
+                }
+                acc.push(memberData);
+            }
+            return acc;
+        }, []);
+        
+        res.json(allMembersImages);
+        console.log(JSON.stringify(allMembersImages));
     });
 });
