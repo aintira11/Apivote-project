@@ -1,5 +1,6 @@
 import express from "express";
 import { conn, queryAsync } from "../dbconnect";
+import { ModelPhoto } from "../model/model";
 
 export const router =express.Router();
 
@@ -54,7 +55,7 @@ router.get('/myrank/:User_Id', (req, res) => {
 // diff ของแต่ละรูป
 router.get('/rank/diff/:ImageID', (req, res) => {
     const ImageID = req.params.ImageID;
-    console.log("ImageID",ImageID);
+    console.log("ImageID", ImageID);
     
     // ดึงข้อมูลรูปภาพและคะแนนก่อนการโหวตของวันก่อนหน้า
     const sqlBefore = `SELECT * FROM Vote WHERE Date_vote = CURDATE() - INTERVAL 1 DAY ORDER BY V_Score DESC `;
@@ -74,19 +75,19 @@ router.get('/rank/diff/:ImageID', (req, res) => {
             }
             console.log(afterResults);
             
-
             let currentRank = null;
             let previousRank = null;
             let rankChange = null;
 
             // หาค่าอันดับปัจจุบันของรูปภาพ
-            const currentImageIndex = afterResults.findIndex((item: any) => ImageID ===item.ImageID);
+            const currentImageIndex = afterResults.findIndex((item: any) => ImageID.toString() === item.ImageID.toString());
+
             if (currentImageIndex !== -1) {
                 currentRank = currentImageIndex + 1;
             }
 
             // หาค่าอันดับก่อนหน้าของรูปภาพ
-            const previousImageIndex = beforeResults.findIndex((item: any) => ImageID === item.ImageID );
+            const previousImageIndex = beforeResults.findIndex((item: { ImageID: any; }) => ImageID.toString() === item.ImageID.toString());
             if (previousImageIndex !== -1) {
                 previousRank = previousImageIndex + 1;
             }
