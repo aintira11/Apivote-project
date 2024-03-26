@@ -20,7 +20,7 @@ router.get('/allPhoto/Rank', (req, res) => {
 //rank รูป ของ user
 router.get('/myrank/:User_Id', (req, res) => {
     const User_Id = req.params.User_Id;
-
+    
     // หารูปของ User
     const sqlAfter = "SELECT ImageID ,Name_photo, Photo, Score, User.User_Id, UserName FROM Image, User WHERE Image.User_Id = User.User_Id AND User.User_Id = ?";
     conn.query({sql: sqlAfter, timeout: 60000}, [User_Id], (err, afterResults) => {
@@ -50,3 +50,53 @@ router.get('/myrank/:User_Id', (req, res) => {
     });
 });
 
+
+// diff ของแต่ละรูป
+router.get('/rank/diff/:ImageID', (req, res) => {
+    const ImageID = req.params.ImageID;
+    console.log("ImageID",ImageID);
+    
+    // ดึงข้อมูลรูปภาพและคะแนนก่อนการโหวตของวันก่อนหน้า
+    const sqlBefore = `SELECT * FROM Vote WHERE Date_vote = CURDATE() - INTERVAL 1 DAY ORDER BY V_Score DESC `;
+    conn.query({sql: sqlBefore, timeout: 60000}, (err, beforeResults) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Error fetching photos for the previous day' });
+        }
+        console.log(beforeResults);
+        
+        // ดึงข้อมูลรูปภาพและคะแนนหลังการโหวตของวันปัจจุบัน
+        const sqlAfter = `SELECT * FROM Vote WHERE Date_vote = CURDATE() ORDER BY V_Score DESC `;
+        conn.query({sql: sqlAfter, timeout: 60000}, (err, afterResults) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: 'Error fetching photos for the current day' });
+            }
+            console.log(afterResults);
+            
+
+            let currentRank = null;
+            let previousRank = null;
+            let rankChange = null;
+
+            // หาค่าอันดับปัจจุบันของรูปภาพ
+            const currentImageIndex = afterResults.findIndex((item: any) => ImageID ===item.ImageID);
+            if (currentImageIndex !== -1) {
+                currentRank = currentImageIndex + 1;
+            }
+
+            // หาค่าอันดับก่อนหน้าของรูปภาพ
+            const previousImageIndex = beforeResults.findIndex((item: any) => ImageID === item.ImageID );
+            if (previousImageIndex !== -1) {
+                previousRank = previousImageIndex + 1;
+            }
+
+            // คำนวณค่าการเปลี่ยนแปลงของอันดับ
+            if (currentRank !== null && previousRank !== null) {
+                rankChange = previousRank - currentRank;
+            }
+
+            res.json({ currentRank, previousRank, rankChange });
+        });
+    });
+});

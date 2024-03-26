@@ -50,3 +50,4 @@ app.use("/RU",updatuser);
 
 app.use("/rankall",rankImage11);
 app.use("/rankink",rankImage11);
+app.use("/rankDiff",rankImage11);
