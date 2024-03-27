@@ -62,15 +62,16 @@ router.put("/Image/:ImageID", fileUpload.diskLoader.single("Photo"), async (req,
         return res.status(500).json({ error: 'Error inserting user' });
       }
       res.status(201).json({ Photo: Photo, result });
-    });
-    const sqlv = "UPDATE Vote SET V_Score=1000 WHERE  Date_vote = NOW() AND ImageID = ?";
-    conn.query(sqlv, [ImageID], (err, result) => {
+      const sqlv = "UPDATE Vote SET V_Score = 1000 WHERE  Date_vote = CURDATE() AND ImageID = ?";
+      conn.query(sqlv, [ImageID], (err, result) => {
       if (err) {
         console.error(err);
         return res.status(500).json({ error: 'Error inserting user' });
       }
       res.status(201).json({ Photo: Photo, result });
     });
+    });
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error uploading image and inserting user' });
