@@ -1,5 +1,5 @@
 import express from "express";
-import { router as index } from "./api/index";  //import router แต่เปลี่ยนชื่อเป็น index
+import { router as index } from "./api/index";  
 import { router as user } from "./api/user"; 
 import { router as image } from "./api/image";
 import { router as upload } from "./api/upload";
@@ -51,3 +51,6 @@ app.use("/RU",updatuser);
 app.use("/rankall",rankImage11);
 app.use("/rankink",rankImage11);
 app.use("/rankDiff",rankImage11);
+
+app.use("/post",index);
+app.use("/get",index);
